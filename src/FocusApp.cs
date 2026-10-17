@@ -40,10 +40,10 @@ namespace FocusDesktop
                 settings.Save();
             }
 
-            miIcons = new ToolStripMenuItem("Скрыть иконки", null, (s, e) => ToggleIcons());
-            miTaskbar = new ToolStripMenuItem("Скрывать панель задач", null, (s, e) => ToggleHideTaskbar());
-            miButton = new ToolStripMenuItem("Спрятать кнопку", null, (s, e) => ToggleButton());
-            miAutostart = new ToolStripMenuItem("Автозапуск с Windows", null, (s, e) => ToggleAutostart());
+            miIcons = new ToolStripMenuItem("Hide icons", null, (s, e) => ToggleIcons());
+            miTaskbar = new ToolStripMenuItem("Hide taskbar too", null, (s, e) => ToggleHideTaskbar());
+            miButton = new ToolStripMenuItem("Hide button", null, (s, e) => ToggleButton());
+            miAutostart = new ToolStripMenuItem("Start with Windows", null, (s, e) => ToggleAutostart());
             menu.Items.AddRange(new ToolStripItem[]
             {
                 miIcons,
@@ -52,7 +52,7 @@ namespace FocusDesktop
                 miButton,
                 miAutostart,
                 new ToolStripSeparator(),
-                new ToolStripMenuItem("Выйти", null, (s, e) => Exit()),
+                new ToolStripMenuItem("Exit", null, (s, e) => Exit()),
             });
             menu.Opening += (s, e) => UpdateMenu();
 
@@ -181,9 +181,9 @@ namespace FocusDesktop
         private void UpdateMenu()
         {
             bool visible = DesktopIcons.AreVisible() ?? true;
-            miIcons.Text = visible ? "Скрыть иконки" : "Показать иконки";
+            miIcons.Text = visible ? "Hide icons" : "Show icons";
             miTaskbar.Checked = settings.HideTaskbar;
-            miButton.Text = settings.ButtonVisible ? "Спрятать кнопку" : "Показать кнопку";
+            miButton.Text = settings.ButtonVisible ? "Hide button" : "Show button";
             try { miAutostart.Checked = Settings.Autostart; }
             catch (Exception ex) { Log.Error("Failed to read autostart", ex); }
         }
@@ -205,7 +205,7 @@ namespace FocusDesktop
             SyncTaskbar(visible);
             button.IconsVisible = visible;
             tray.Icon = visible ? trayIconVisible : trayIconHidden;
-            tray.Text = visible ? "Focus Desktop: иконки видны" : "Focus Desktop: иконки скрыты";
+            tray.Text = visible ? "Focus Desktop: icons visible" : "Focus Desktop: icons hidden";
         }
 
         private int ButtonSizePx() => Scale(settings.ButtonSize);

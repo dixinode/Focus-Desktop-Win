@@ -1,33 +1,36 @@
 # Focus Desktop
 
-Утилита для Windows 10/11: прячет и возвращает иконки рабочего стола одной кнопкой.
+A tiny Windows 10/11 utility that hides and shows the desktop icons (and optionally the taskbar) with one click.
 
-## Запуск
+## Usage
 
-Запусти `FocusDesktop.exe`. Установка не нужна: используется .NET Framework 4.8, который уже есть в Windows 11. Права администратора не нужны.
+Run `FocusDesktop.exe`. Nothing to install: it targets .NET Framework 4.8, which ships with Windows 11. No administrator rights needed.
 
-- **Круглая кнопка** справа вверху главного монитора. Клик переключает иконки, а если зажать и потянуть, кнопка перетаскивается. Тёмная кнопка значит, что иконки видны, синяя с перечёркиванием значит, что скрыты.
-- **Иконка в трее.** Левый клик переключает иконки. Правый клик открывает меню: «Скрыть/Показать иконки», «Скрывать панель задач», «Спрятать/Показать кнопку», «Автозапуск с Windows», «Выйти».
-- **Скрывать панель задач.** Если галочка стоит, вместе с иконками прячется и панель задач, а развёрнутые окна занимают весь экран. Когда иконки возвращаются, панель тоже возвращается. Пока панель скрыта, трей недоступен, поэтому плавающая кнопка в этом режиме всегда видна. Штатное «Автоматически скрывать панель задач» программа не трогает: на Windows 11 26H2 оно не срабатывает, если его включает другая программа.
-- **Выход** возвращает иконки и панель задач и убирает кнопку и значок из трея.
+- **Floating button** in the top-right corner of the primary monitor. Click it to toggle the icons; press and drag to move it. Dark means the icons are visible, blue with a slash means they are hidden.
+- **Tray icon.** Left click toggles the icons. Right click opens the menu: *Hide/Show icons*, *Hide taskbar too*, *Hide/Show button*, *Start with Windows*, *Exit*.
+- **Hide taskbar too.** When checked, the taskbar is hidden together with the icons and maximized windows take the whole screen. Showing the icons brings the taskbar back. While the taskbar is hidden the tray is out of reach, so the floating button always stays on screen in this mode.
+- **Exit** brings back the icons and the taskbar and removes the button and the tray icon.
 
-Настройки и лог ошибок хранятся в `%APPDATA%\FocusDesktop\`. Автозапуск записывается в `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+Settings and the error log live in `%APPDATA%\FocusDesktop\`. Autostart is stored in `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
 
-## Как устроено
+## How it works
 
-- Иконки переключаются той же командой Explorer, что и пункт «Вид → Показывать значки рабочего стола» (`WM_COMMAND 0x7402` в `SHELLDLL_DefView`). Если она не сработала, используется запасной путь `ShowWindow(SysListView32)`.
-- Состояние нигде не хранится: каждые 0,5 с проверяется реальная видимость окна иконок, поэтому кнопка и трей не сбиваются после Win+D или правого клика по рабочему столу.
-- Кнопка сделана как layered-окно с альфа-каналом: без рамки, не попадает в Alt+Tab и на панель задач, не забирает фокус. Раз в 2 с она заново поднимается наверх, чтобы оставаться поверх полноэкранных приложений в режиме «окно без рамки».
-- Включён DPI-режим Per-Monitor V2. Позиция кнопки хранится в долях экрана, поэтому после смены разрешения или масштаба она остаётся на своём месте.
-- Если программа упала при скрытых иконках или панели, при следующем запуске они возвращаются.
+- Icons are toggled with the same Explorer command as the desktop menu's *View → Show desktop icons* (`WM_COMMAND 0x7402` sent to `SHELLDLL_DefView`). If that has no effect, it falls back to `ShowWindow(SysListView32)`.
+- No state is cached: every 0.5 s the real visibility of the icon window is checked, so the button and the tray never get out of sync after Win+D or the desktop context menu.
+- The button is a per-pixel-alpha layered window: no frame, not in Alt+Tab or the taskbar, never steals focus. Every 2 s it re-asserts topmost to stay above borderless full-screen apps.
+- The taskbar is hidden by hiding the `Shell_TrayWnd` / `Shell_SecondaryTrayWnd` windows and expanding the work area to the full screen. The built-in *Automatically hide the taskbar* setting is not used: on Windows 11 26H2 the taskbar ignores it when a program changes it.
+- Per-Monitor V2 DPI awareness. The button position is stored as a fraction of the screen, so it stays in place after resolution or scaling changes.
+- If the app crashes while the icons or the taskbar are hidden, they are restored on the next start.
 
-## Сборка из исходников
+## Building
 
-Исходники лежат в `src/`. Нужен .NET SDK 6 или новее:
+Sources are in `src/`. Requires the .NET SDK 6 or newer (works on Windows and Linux):
 
 ```
 cd src
 dotnet build -c Release
 ```
 
-Готовый файл появится в `src\bin\Release\net48\FocusDesktop.exe`.
+The exe is written to `src/bin/Release/net48/FocusDesktop.exe`.
+
+The original specification is in [docs/PLAN.md](docs/PLAN.md).
